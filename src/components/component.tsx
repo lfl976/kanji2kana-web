@@ -69,7 +69,7 @@ export function Component() {
 		params.set('text', text);
 
 		// const url = `https://api.example.com/translate?${params.toString()}`;
-		const url = `http://app3-env.eba-t6kkpkku.ap-northeast-1.elasticbeanstalk.com/tokenize?${params.toString()}`;
+		const url = `http://127.0.0.1:5000//tokenize?${params.toString()}`;
 
 		fetch(url)
 			.then((res) => res.json())
