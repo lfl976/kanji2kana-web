@@ -60,25 +60,34 @@ function convertToRuby(data: TranslateNode[]) {
 
 export function Component() {
 	const [text, setText] = useState('');
-	const [translatedText, setTranslatedText] = useState('');
+	const [translatedList, setTranslatedList] = useState<string[]>([]);
 
-	function translate() {
+	async function translate() {
 		// Add your translation logic here
 		if (!text) return;
-		const params = new URLSearchParams({} as any);
-		params.set('text', text);
+		const list = [];
+		const arr = text.split('\n');
 
-		// const url = `https://api.example.com/translate?${params.toString()}`;
-		const url = `http://127.0.0.1:5000//tokenize?${params.toString()}`;
+		console.log('Text to translate', arr);
 
-		fetch(url)
-			.then((res) => res.json())
-			.then((data) => {
-				console.log(data);
+		for (const item of arr) {
+			try {
+				if (!item) continue;
+				const params = new URLSearchParams({} as any);
+				params.set('text', item);
+				const url = `http://127.0.0.1:5000//tokenize?${params.toString()}`;
+
+				const response = await fetch(url);
+				const data = await response.json();
+				console.log('Translated data', data);
 				const result = convertToRuby(data);
-				setTranslatedText(result);
-			})
-			.catch((err) => {});
+				list.push(result);
+			} catch (error) {
+				console.error(error);
+				break;
+			}
+		}
+		setTranslatedList(list);
 	}
 	return (
 		<div className="flex flex-col min-h-screen">
@@ -147,12 +156,15 @@ export function Component() {
 					<div className="space-y-4">
 						<h2 className="text-2xl font-bold">Translated Text</h2>
 						<div className="rounded-md border border-gray-200 border-gray-300 bg-white p-4 text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-50 dark:border-gray-800">
-							<p
-								dangerouslySetInnerHTML={{
-									__html:
-										translatedText || 'The translated text will appear here.',
-								}}
-							></p>
+							{translatedList.map((item, index) => (
+								<p
+									key={index}
+									className="text-xl leading-9"
+									dangerouslySetInnerHTML={{
+										__html: item || 'The translated text will appear here.',
+									}}
+								></p>
+							))}
 						</div>
 					</div>
 				</div>
