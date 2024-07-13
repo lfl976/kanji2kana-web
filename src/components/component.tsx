@@ -23,9 +23,9 @@ To read more about using these font, please visit the Next.js documentation:
 - App Directory: https://nextjs.org/docs/app/building-your-application/optimizing/fonts
 - Pages Directory: https://nextjs.org/docs/pages/building-your-application/optimizing/fonts
 **/
-'use client';
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+"use client";
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
 	DropdownMenuTrigger,
 	DropdownMenuLabel,
@@ -33,8 +33,8 @@ import {
 	DropdownMenuItem,
 	DropdownMenuContent,
 	DropdownMenu,
-} from '@/components/ui/dropdown-menu';
-import { Textarea } from '@/components/ui/textarea';
+} from "@/components/ui/dropdown-menu";
+import { Textarea } from "@/components/ui/textarea";
 
 interface TranslateNode {
 	surface: string;
@@ -47,7 +47,7 @@ function hasChineseCharacter(text: string) {
 }
 
 function convertToRuby(data: TranslateNode[]) {
-	let result = '';
+	let result = "";
 	data.forEach((item) => {
 		if (item.kana && hasChineseCharacter(item.surface)) {
 			result += `<ruby>${item.surface}<rp>(</rp><rt>${item.kana}</rt><rp>)</rp></ruby>`;
@@ -59,27 +59,31 @@ function convertToRuby(data: TranslateNode[]) {
 }
 
 export function Component() {
-	const [text, setText] = useState('');
+	const [text, setText] = useState("");
 	const [translatedList, setTranslatedList] = useState<string[]>([]);
 
 	async function translate() {
 		// Add your translation logic here
 		if (!text) return;
 		const list = [];
-		const arr = text.split('\n');
+		const arr = text.split("\n");
 
-		console.log('Text to translate', arr);
+		console.log("Text to translate", arr);
 
 		for (const item of arr) {
 			try {
 				if (!item) continue;
 				const params = new URLSearchParams({} as any);
-				params.set('text', item);
+				params.set("text", item);
 				const url = `http://127.0.0.1:5000//tokenize?${params.toString()}`;
+				const gllgleUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=ja&dt=t&q=${item}`;
+				const vercelUrl = `https://kanji2kana-service.vercel.app/tokenize?${params.toString()}`;
 
-				const response = await fetch(url);
+				const response = await fetch(
+					location.href.includes("local") ? url : vercelUrl
+				);
 				const data = await response.json();
-				console.log('Translated data', data);
+				console.log("Translated data", data);
 				const result = convertToRuby(data);
 				list.push(result);
 			} catch (error) {
@@ -161,7 +165,7 @@ export function Component() {
 									key={index}
 									className="text-xl leading-9"
 									dangerouslySetInnerHTML={{
-										__html: item || 'The translated text will appear here.',
+										__html: item || "The translated text will appear here.",
 									}}
 								></p>
 							))}
