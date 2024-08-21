@@ -61,6 +61,7 @@ function convertToRuby(data: TranslateNode[]) {
 export function Component() {
 	const [text, setText] = useState("");
 	const [translatedList, setTranslatedList] = useState<string[]>([]);
+	const [loading, setLoading] = useState(false);
 
 	async function translate() {
 		// Add your translation logic here
@@ -71,12 +72,14 @@ export function Component() {
 		console.log("Text to translate", arr);
 
 		for (const item of arr) {
+			setLoading(true);
 			try {
 				if (!item) continue;
 				const params = new URLSearchParams({} as any);
 				params.set("text", item);
-				const url = `http://127.0.0.1:5000//tokenize?${params.toString()}`;
+				// const url = `http://127.0.0.1:5000//tokenize?${params.toString()}`;
 				const gllgleUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=ja&dt=t&q=${item}`;
+				const url = `https://kanji2kana-service.vercel.app/tokenize?${params.toString()}`;
 				const vercelUrl = `https://kanji2kana-service.vercel.app/tokenize?${params.toString()}`;
 
 				const response = await fetch(
@@ -89,10 +92,22 @@ export function Component() {
 			} catch (error) {
 				console.error(error);
 				break;
+			} finally {
+				setLoading(false);
 			}
 		}
-		setTranslatedList(list);
+		setTranslatedList([...translatedList, ...list]);
 	}
+
+	function playAudio() {
+		// 创建一个新的SpeechSynthesisUtterance实例
+		const utterance = new SpeechSynthesisUtterance(text);
+		// 日语
+		utterance.lang = "ja-JP";
+		// 开始朗读
+		speechSynthesis.speak(utterance);
+	}
+
 	return (
 		<div className="flex flex-col min-h-screen">
 			<header className="bg-gray-900 text-white py-4 px-6 flex items-center justify-between">
@@ -153,8 +168,14 @@ export function Component() {
 							value={text}
 							onChange={(e) => setText(e.target.value)}
 						/>
-						<Button className="w-full" onClick={translate}>
+						<Button className="w-96" onClick={translate} disabled={loading}>
 							Translate
+						</Button>
+						<Button className="ml-4" onClick={playAudio}>
+							Audio
+						</Button>
+						<Button className="ml-4" onClick={() => setTranslatedList([])}>
+							Clear
 						</Button>
 					</div>
 					<div className="space-y-4">
